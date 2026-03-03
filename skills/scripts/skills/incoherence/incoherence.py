@@ -183,7 +183,7 @@ CRITICAL: All script outputs use XML format. You MUST:
     parts.append("")
 
     next_text = guidance.get("next", "")
-    if step >= total or "COMPLETE" in next_text.upper():
+    if step >= WORKFLOW.total_steps or "COMPLETE" in next_text.upper():
         parts.append("WORKFLOW COMPLETE - Present report to user.")
     else:
         next_cmd = f'python3 -m skills.incoherence.incoherence --step-number {step + 1}'

@@ -42,6 +42,7 @@ class Workflow:
     """Workflow definition for introspection and validation."""
 
     _module_path: str | None = None
+    _params: dict = {}
 
     def __init__(
         self,

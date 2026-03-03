@@ -905,7 +905,7 @@ def build_read_guide(scope: str) -> str:
         "\n"
         + v["footer"] + "\n"
         "\n"
-        "NEVER read papers/**/* - use references/ only."
+        "- use references/ only."
     )
 
 
