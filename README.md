@@ -129,14 +129,14 @@ Clone into your Claude Code configuration directory:
 
 ```bash
 # Per-project
-git clone https://github.com/solatis/claude-config .claude
+git clone https://github.com/jonatanmichael/claude-code-config.git .claude
 
 # Global (new setup)
-git clone https://github.com/solatis/claude-config ~/.claude
+git clone https://github.com/jonatanmichael/claude-code-config.git ~/.claude
 
 # Global (existing ~/.claude)
 cd ~/.claude
-git remote add workflow https://github.com/solatis/claude-config
+git remote add workflow https://github.com/jonatanmichael/claude-code-config.git
 git fetch workflow
 git merge workflow/main --allow-unrelated-histories
 ```

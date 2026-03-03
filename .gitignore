@@ -1,6 +1,3 @@
-# Ignore everything by default
-*
-
 # Track these directories and their contents
 !.github/
 !.github/**
@@ -28,3 +25,4 @@
 **/.hypothesis
 **/.venv
 **/*.pyc
+.claude/*
