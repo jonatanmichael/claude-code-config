@@ -20,16 +20,6 @@ What is your PRIMARY problem?
     +-> Need specific format              -> structure.md
 ```
 
-## Navigation Anti-patterns
-
-Avoid reading these directly:
-
-- `papers/**/*.md` - Source paper summaries, too granular for optimization workflow
-- `papers/**/*.yaml` - Paper metadata, not actionable guidance
-- `papers/**/*.pdf` - Original papers, not consumable
-
-The reference files here synthesize those papers into actionable techniques.
-
 ## Usage in Prompt Optimization Workflow
 
 The optimize.py script selects references based on diagnosed problem:

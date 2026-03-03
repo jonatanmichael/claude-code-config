@@ -13,5 +13,4 @@ Prompt optimization skill. IMMEDIATELY invoke the script -- do NOT explore or an
 
 | Directory     | What                          | When to read                |
 | ------------- | ----------------------------- | --------------------------- |
-| `papers/`     | Source papers by category     | Verifying technique origins |
 | `references/` | Prompt engineering techniques | Script instructs            |
