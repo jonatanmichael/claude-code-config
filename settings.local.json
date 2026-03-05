@@ -21,6 +21,10 @@
       "Bash(git log:*)",
       "Bash(git status:*)",
       "Bash(git branch --list:*)",
+      "Bash(git fetch:*)",
+      "Bash(git worktree add:*)",
+      "Bash(git -C * status*)",
+      "Bash(git -C * log*)",
 
       "mcp__claude_ai_Atlassian__getAccessibleAtlassianResources",
       "mcp__claude_ai_Atlassian__getJiraIssue",
