@@ -89,15 +89,16 @@ passes review before the next starts.
 
 ```mermaid
 flowchart LR
-    P[Plan / Milestone] --> QR[Quality Reviewer]
+    P[Plan / Milestone] --> QR[Quality Review]
     QR -->|pass| TW[Technical Writer]
-    TW -->|pass| OK["✓ Accepted"]
+    TW -->|pass| QRD[QR Docs]
+    QRD -->|pass| OK["✓ Accepted"]
     QR -->|fail| P
-    TW -->|fail| P
+    QRD -->|fail| P
 
     style OK fill:#0a2a1a,stroke:#4ade80,color:#4ade80
-    linkStyle 3 stroke:#ff6b6b,stroke-dasharray:4
     linkStyle 4 stroke:#ff6b6b,stroke-dasharray:4
+    linkStyle 5 stroke:#ff6b6b,stroke-dasharray:4
 ```
 
 ### Cost-Effective Delegation
@@ -112,10 +113,10 @@ routine work.
 
 ```mermaid
 flowchart TD
-    O[Orchestrator] --> H[Haiku\nroutine tasks]
-    O --> S[Sonnet\nmoderate complexity]
+    O[Orchestrator] --> H[Haiku: routine tasks]
+    O --> S[Sonnet: moderate complexity]
     S -->|review fails / recurs| O
-    O -->|genuine ambiguity| Top[Sonnet / Opus\nescalated]
+    O -->|genuine ambiguity| Top[Sonnet / Opus: escalated]
 
     style H fill:#141428,stroke:#00d4ff,color:#e0e0e0
     style S fill:#141428,stroke:#00d4ff,color:#e0e0e0
@@ -126,8 +127,7 @@ flowchart TD
 
 I have not run formal benchmarks. I can only tell you what I have observed using
 this workflow to build and maintain non-trivial applications entirely with
-Claude Code -- backend systems, data pipelines, streaming applications in C++,
-Python, and Go.
+Claude Code -- backend systems, data pipelines, streaming applications in Python, .Net, Clojure, and Go.
 
 The problems I used to hit constantly are gone:
 
@@ -179,7 +179,7 @@ The workflow for non-trivial changes: explore -> plan -> execute.
 flowchart LR
     A[1. Explore] --> B[2. Think]
     B --> C[3. Plan]
-    C --> D["/clear\nreset context"]
+    C --> D["/clear (reset context)"]
     D --> E[5. Execute]
 
     style D fill:#2a1010,stroke:#ff6b6b,stroke-width:2px,color:#ff6b6b
