@@ -429,3 +429,27 @@ For targeted updates:
 ```
 Use your doc-sync skill to update documentation in src/validators/
 ```
+
+## Commands
+
+Commands are slash commands loaded automatically from `commands/`. Unlike skills, they
+run directly without a Python orchestrator.
+
+### Worktree
+
+Creates an isolated git worktree for a branch inside `.worktrees/` at the repo root.
+Handles three cases: tracks an existing remote branch, reuses a local branch, or
+creates a new branch from main.
+
+```
+/worktree <branch-name>
+```
+
+### Clean Worktree
+
+Safely removes a worktree and its branch. Checks for uncommitted changes and unpushed
+commits before removing — stops with a warning if either check fails.
+
+```
+/clean-worktree <branch-name>
+```
