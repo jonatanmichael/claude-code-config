@@ -51,6 +51,11 @@ trigger says to.
 The principle is just-in-time context. Indexes load automatically but stay
 small. Detailed knowledge loads only when relevant.
 
+| File | Loads | Content | Token limit |
+|------|-------|---------|-------------|
+| `CLAUDE.md` | Always, automatically | Index only — short descriptions + triggers | ~200 |
+| `README.md` | On demand, when triggered | Invisible knowledge — decisions, invariants | ~500 |
+
 The technical writer agent enforces token budgets: ~200 tokens for CLAUDE.md,
 ~500 for README.md, 100 for function docs, 150 for module docs. These limits
 force discipline -- if you are exceeding them, you are probably documenting what
@@ -82,6 +87,19 @@ quality reviewer checks completeness. The loop runs until both pass.
 Plans pass review before execution begins. During execution, each milestone
 passes review before the next starts.
 
+```mermaid
+flowchart LR
+    P[Plan / Milestone] --> QR[Quality Reviewer]
+    QR -->|pass| TW[Technical Writer]
+    TW -->|pass| OK["✓ Accepted"]
+    QR -->|fail| P
+    TW -->|fail| P
+
+    style OK fill:#0a2a1a,stroke:#4ade80,color:#4ade80
+    linkStyle 3 stroke:#ff6b6b,stroke-dasharray:4
+    linkStyle 4 stroke:#ff6b6b,stroke-dasharray:4
+```
+
 ### Cost-Effective Delegation
 
 The orchestrator delegates to smaller agents -- Haiku for straightforward tasks,
@@ -91,6 +109,18 @@ smaller models precisely the guidance they need at each step.
 When quality review fails or problems recur, the orchestrator escalates to
 higher-quality models. Expensive models are reserved for genuine ambiguity, not
 routine work.
+
+```mermaid
+flowchart TD
+    O[Orchestrator] --> H[Haiku\nroutine tasks]
+    O --> S[Sonnet\nmoderate complexity]
+    S -->|review fails / recurs| O
+    O -->|genuine ambiguity| Top[Sonnet / Opus\nescalated]
+
+    style H fill:#141428,stroke:#00d4ff,color:#e0e0e0
+    style S fill:#141428,stroke:#00d4ff,color:#e0e0e0
+    style Top fill:#141428,stroke:#ff6b6b,color:#e0e0e0
+```
 
 ## Does This Actually Work?
 
@@ -144,6 +174,21 @@ git merge workflow/main --allow-unrelated-histories
 ## Usage
 
 The workflow for non-trivial changes: explore -> plan -> execute.
+
+```mermaid
+flowchart LR
+    A[1. Explore] --> B[2. Think]
+    B --> C[3. Plan]
+    C --> D["/clear\nreset context"]
+    D --> E[5. Execute]
+
+    style D fill:#2a1010,stroke:#ff6b6b,stroke-width:2px,color:#ff6b6b
+    linkStyle 3 stroke:#ff6b6b,stroke-dasharray:5
+```
+
+> **`/clear` is a hard boundary.** Plans are written to files precisely so
+> context can be reset here. Do not skip it -- accumulated context from planning
+> degrades execution quality.
 
 **1. Explore the problem.** Understand what you are dealing with. Figure out the
 solution.
