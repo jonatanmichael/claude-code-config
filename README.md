@@ -155,14 +155,25 @@ approach, give it a shot. I would like to hear what works and what does not.
 
 ## Quick Start
 
-Clone into your Claude Code configuration directory:
+Copy this prompt into Claude Code and send it:
+
+```
+Read https://raw.githubusercontent.com/jonatanmichael/claude-code-config/main/INSTALL.md and follow the installation instructions
+```
+
+Claude will check prerequisites, ask whether you want a global or per-project install,
+run the right git commands for your situation, and verify the result.
+
+### Manual install
+
+If you prefer to install yourself:
 
 ```bash
-# Per-project
-git clone https://github.com/jonatanmichael/claude-code-config.git .claude
-
 # Global (new setup)
 git clone https://github.com/jonatanmichael/claude-code-config.git ~/.claude
+
+# Per-project
+git clone https://github.com/jonatanmichael/claude-code-config.git .claude
 
 # Global (existing ~/.claude)
 cd ~/.claude
@@ -434,6 +445,16 @@ Use your doc-sync skill to update documentation in src/validators/
 
 Commands are slash commands loaded automatically from `commands/`. Unlike skills, they
 run directly without a Python orchestrator.
+
+### Workflow
+
+Lists all available skills with descriptions, when-to-use guidance, and example
+invocations. Use this when you don't remember a skill name or want to see the
+recommended sequence for a task.
+
+```
+/workflow
+```
 
 ### Worktree
 
