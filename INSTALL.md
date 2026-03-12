@@ -119,6 +119,35 @@ If the merge produces conflicts, stop and tell the user which files conflict. Do
 
 ---
 
+## Step 3.5: Optional — permissions settings
+
+The repository includes a `settings.local.json` that was installed alongside the other files.
+Ask the user:
+
+> The workflow includes a recommended permissions configuration for Claude Code.
+>
+> **What it does:** allows broad tool use by default, and blocks dangerous commands
+> (e.g. `rm -rf`, `sudo`, `curl | bash`, force-push, reading SSH keys and credentials).
+>
+> Keep it? (yes / no)
+
+Wait for the answer before continuing.
+
+**If yes:** no action needed — the file is already in place.
+Tell the user:
+> Permissions settings active. You can review or adjust them at `<install_path>/settings.local.json`.
+
+**If no:** remove the file:
+
+```bash
+rm <install_path>/settings.local.json
+```
+
+Tell the user:
+> Removed. Claude Code will use its default permissions.
+
+---
+
 ## Step 4: Verify
 
 Determine the install path used in Step 3 (`~/.claude` or `./.claude`), then run:
