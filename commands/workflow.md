@@ -1,5 +1,5 @@
 ---
-name: skills
+name: workflow
 description: List all available skills with descriptions and example invocations
 ---
 
