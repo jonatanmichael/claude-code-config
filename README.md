@@ -446,6 +446,16 @@ Use your doc-sync skill to update documentation in src/validators/
 Commands are slash commands loaded automatically from `commands/`. Unlike skills, they
 run directly without a Python orchestrator.
 
+### Workflow
+
+Lists all available skills with descriptions, when-to-use guidance, and example
+invocations. Use this when you don't remember a skill name or want to see the
+recommended sequence for a task.
+
+```
+/workflow
+```
+
 ### Worktree
 
 Creates an isolated git worktree for a branch inside `.worktrees/` at the repo root.
