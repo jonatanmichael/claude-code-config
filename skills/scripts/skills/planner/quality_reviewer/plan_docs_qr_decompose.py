@@ -28,12 +28,13 @@ PHASE = "plan-docs"
 # =============================================================================
 
 STEP_1_ABSORB = """\
-Read plan.json from STATE_DIR (plan-docs projection — strips diff/code content, keeps doc_diff only):
+Read plan.json from STATE_DIR (plan-docs projection — includes diff presence
+for CODE_WITHOUT_DOCS detection; does not review diff content):
   cat $STATE_DIR/plan.json | jq '{
     planning_context: {decisions},
     milestones: [.milestones[] | {
       id, number, name, documentation,
-      code_changes: [.code_changes[] | {id, file, doc_diff, comments}]
+      code_changes: [.code_changes[] | {id, file, diff, doc_diff, comments}]
     }]
   }'
 
@@ -41,12 +42,14 @@ SCOPE: Documentation quality only. You verify doc_diff fields.
 
 WHAT YOU REVIEW:
   - milestones[].code_changes[].doc_diff -- documentation overlay diffs
+  - milestones[].code_changes[].diff presence (non-empty = code change exists)
+    used ONLY to detect CODE_WITHOUT_DOCS (diff != "" but doc_diff == "")
   - Temporal contamination in doc_diff content
   - WHY-not-WHAT quality in added comments
   - Decision coverage (DL-XXX references)
 
 WHAT YOU DO NOT REVIEW:
-  - milestones[].code_changes[].diff -- code logic (plan-code's job)
+  - milestones[].code_changes[].diff content -- code logic (plan-code's job)
   - Code correctness, compilation, types
   - Whether code implementation is correct
 
