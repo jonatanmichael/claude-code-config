@@ -4,7 +4,6 @@ Moved from lib/workflow/constants.py to planner/shared/qr/constants.py.
 Extended with routing configuration (moved from qr/utils.py).
 """
 
-QR_ITERATION_LIMIT = 5
 QR_ITERATION_DEFAULT = 1
 
 # Routing: (workflow, phase) -> (route_step, module_path, total_steps)

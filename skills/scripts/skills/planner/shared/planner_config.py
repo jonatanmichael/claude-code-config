@@ -48,7 +48,16 @@ def load_project_config() -> dict:
 
     try:
         user_config = json.loads(config_path.read_text())
-        return {**DEFAULTS, **user_config}
+        # Deep merge nested dicts so partial overrides don't discard defaults.
+        # Example: {"severity_thresholds": {"3": ["MUST"]}} should override
+        # only key "3", not replace the entire severity_thresholds dict.
+        merged = dict(DEFAULTS)
+        for key, value in user_config.items():
+            if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+                merged[key] = {**merged[key], **value}
+            else:
+                merged[key] = value
+        return merged
     except (json.JSONDecodeError, IOError):
         return dict(DEFAULTS)
 

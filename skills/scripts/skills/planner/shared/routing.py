@@ -78,7 +78,7 @@ def detect_qr_state(state_dir: str, phase: str) -> tuple[bool, list[dict]]:
     if not qr_state:
         return (False, [])
     iteration = qr_state.get("iteration", 1)
-    blocking_failures = query_items(qr_state, by_status("FAIL"), by_blocking_severity(iteration))
+    blocking_failures = query_items(qr_state, by_status("FAIL"), by_blocking_severity(iteration, state_dir))
     return (len(blocking_failures) > 0, blocking_failures)
 
 
