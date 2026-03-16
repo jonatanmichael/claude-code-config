@@ -23,8 +23,13 @@ PHASE = "plan-design"
 
 
 STEP_1_ABSORB = """\
-Read plan.json from STATE_DIR:
-  cat $STATE_DIR/plan.json | jq '.'
+Read plan.json from STATE_DIR (plan-design projection — strips code/doc content):
+  cat $STATE_DIR/plan.json | jq '{
+    overview,
+    planning_context,
+    invisible_knowledge,
+    milestones: [.milestones[] | {id, number, name, files, code_intents}]
+  }'
 
 SCOPE: Plan structure and decision quality.
 
