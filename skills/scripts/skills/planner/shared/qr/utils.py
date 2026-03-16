@@ -91,20 +91,29 @@ def by_status(*statuses: str) -> ItemPredicate:
     return lambda item: item.get("status", "TODO") in s
 
 
-def by_blocking_severity(iteration: int) -> ItemPredicate:
+def by_blocking_severity(iteration: int, state_dir: str = "") -> ItemPredicate:
     """Predicate factory: matches items whose severity blocks at iteration.
 
-    Closes over iteration at construction time. The blocking set is
-    resolved once via get_blocking_severities() and captured in the
-    closure -- repeated calls to the returned predicate do not
-    re-evaluate the threshold.
+    Closes over iteration and resolved blocking set at construction time.
+    Repeated calls to the returned predicate do not re-evaluate the threshold.
+
+    When state_dir is provided, reads planner.config.json from that
+    directory to apply per-project severity thresholds. Falls back to
+    built-in thresholds when state_dir is empty or config is missing.
 
     Default "SHOULD" for missing severity field because SHOULD is the
     middle tier -- neither blocks indefinitely (MUST) nor is trivially
     skippable (COULD). See shared/schema.py QA_ITEM_DEFAULTS.
+
+    Args:
+        iteration: QR loop iteration count (1-indexed)
+        state_dir: Path to state directory (optional). Used to load
+                   per-project config written by plan-init.
     """
     from skills.planner.shared.qr.constants import get_blocking_severities
-    blocking = get_blocking_severities(iteration)
+    from skills.planner.shared.planner_config import read_config_from_state
+    config = read_config_from_state(state_dir) if state_dir else None
+    blocking = get_blocking_severities(iteration, config)
     return lambda item: item.get("severity", "SHOULD") in blocking
 
 
@@ -266,7 +275,7 @@ def has_qr_failures(state_dir: str, phase: str) -> bool:
     if not qr_state:
         return False
     iteration = qr_state.get("iteration", 1)
-    return len(query_items(qr_state, by_status("FAIL"), by_blocking_severity(iteration))) > 0
+    return len(query_items(qr_state, by_status("FAIL"), by_blocking_severity(iteration, state_dir))) > 0
 
 
 def qr_file_exists(state_dir: str, phase: str) -> bool:
