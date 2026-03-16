@@ -292,9 +292,18 @@ def _format_qr_item_flags(item_ids: list[str]) -> str:
 
 
 def _max_severity(items: list[dict]) -> str:
-    """Return the highest severity among items in a group."""
+    """Return the highest severity among items in a group.
+
+    Unknown severity values are treated as MUST (safe default: routes to
+    Sonnet rather than Haiku, surfaces malformed QR files via conservative
+    routing). Empty items list returns SHOULD.
+    """
     order = {"MUST": 2, "SHOULD": 1, "COULD": 0}
-    return max((i.get("severity", "SHOULD") for i in items), key=lambda s: order.get(s, 1))
+    return max(
+        (i.get("severity", "SHOULD") for i in items),
+        key=lambda s: order.get(s, 2),  # unknown -> MUST priority (safe)
+        default="SHOULD",
+    )
 
 
 def qr_verify_step(title, phase):
@@ -377,27 +386,27 @@ Start: python3 -m {verify_script} --step 1 --state-dir {state_dir} $qr_item_flag
             "",
         ]
 
-        if sonnet_targets:
-            sonnet_dispatch = template_dispatch(
+        # Emit a single dispatch block to avoid contradictory PARALLEL_CONSTRAINT
+        # banners. COULD-only groups are listed after MUST/SHOULD groups so the
+        # orchestrator can see which ones are lower-priority, but all agents are
+        # dispatched in one message. Mixed-model per-agent support would require
+        # a new dispatch primitive; for now all agents use the default model.
+        all_targets = sonnet_targets + haiku_targets
+        if all_targets:
+            instr_parts = []
+            if sonnet_targets:
+                instr_parts.append(f"{len(sonnet_targets)} groups (MUST/SHOULD)")
+            if haiku_targets:
+                instr_parts.append(f"{len(haiku_targets)} groups (COULD-only)")
+            instr = f"Verify {' and '.join(instr_parts)} in parallel."
+            dispatch = template_dispatch(
                 agent_type="quality-reviewer",
                 template=tmpl,
-                targets=sonnet_targets,
+                targets=all_targets,
                 command=command,
-                instruction=f"Verify {len(sonnet_targets)} groups (MUST/SHOULD items) in parallel.",
+                instruction=instr,
             )
-            action_children.append(sonnet_dispatch)
-            action_children.append("")
-
-        if haiku_targets:
-            haiku_dispatch = template_dispatch(
-                agent_type="quality-reviewer",
-                template=tmpl,
-                targets=haiku_targets,
-                command=command,
-                model="haiku",
-                instruction=f"Verify {len(haiku_targets)} groups (COULD-only items) in parallel.",
-            )
-            action_children.append(haiku_dispatch)
+            action_children.append(dispatch)
             action_children.append("")
 
         action_children += [
