@@ -441,6 +441,60 @@ For targeted updates:
 Use your doc-sync skill to update documentation in src/validators/
 ```
 
+## Permissions
+
+`settings.local.json` follows a **default-open, explicitly-closed** model. Rather
+than whitelisting every operation Claude needs, broad tool access is granted
+upfront so the agent can work autonomously without constant approval prompts.
+Dangerous patterns are then blocked by name.
+
+```json
+"allow": ["Bash(*)", "Read(*)", "Edit(*)", "Write(*)", "WebFetch(*)"]
+```
+
+This lets Claude read, edit, and run shell commands freely -- the normal
+surface area for engineering work. The `deny` list closes the gaps that
+broad access would otherwise leave open.
+
+### What gets denied and why
+
+**Pipe-to-shell attacks** -- `curl | bash`, `wget | sh`, `bash -c`, `sh -c`,
+`node -e`, `python -c`, etc. These are the canonical supply-chain attack
+vector. A compromised URL or injected prompt could execute arbitrary code.
+Blocking them prevents any inline execution from untrusted input.
+
+**Credential and secret access** -- `~/.ssh/**`, `~/.git-credentials`,
+`~/.npmrc`, `~/.pypirc`, `~/.docker/config.json`, `~/Library/Keychains/**`,
+browser profiles. These files contain secrets that should never be read or
+modified by an agent, even accidentally.
+
+**System modification** -- `sudo`, `launchctl`, `crontab`, `chown`,
+`chmod +s` / `chmod 4*`. These can persist changes beyond the project
+boundary or escalate privileges.
+
+**Destructive operations** -- `rm -rf`, `dd`, `mkfs`. Irreversible by
+definition.
+
+**Global package installs** -- `brew install`, `npm install -g`,
+`pip install`. These modify the system environment, not the project.
+Changes are hard to audit and harder to undo.
+
+**Destructive git operations** -- `git push --force`, `git reset --hard`,
+`git commit --amend`, `git config --global`. Force pushes can overwrite
+remote history. Amend rewrites published commits. Global config changes
+affect every repo on the machine.
+
+**Shell history and environment** -- `history`, `printenv`, `env`. These
+can leak sensitive values present in the shell environment.
+
+### The tradeoff
+
+The cost of this model is trust: Claude can run arbitrary shell commands
+within the allow list. The benefit is autonomy -- no interruptions for
+routine operations. The deny list is the security boundary, not the allow
+list. If a pattern should never run regardless of context, it belongs in
+deny.
+
 ## Commands
 
 Commands are slash commands loaded automatically from `commands/`. Unlike skills, they
