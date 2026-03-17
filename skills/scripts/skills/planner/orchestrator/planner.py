@@ -148,6 +148,9 @@ def init_step(title, actions):
         plan_path = Path(state_dir) / "plan.json"
         plan_path.write_text(json.dumps(plan_skeleton, indent=2))
 
+        from skills.planner.shared.planner_config import write_config_to_state
+        write_config_to_state(state_dir)
+
         print(f"STATE_DIR={state_dir}")
 
         return {
@@ -288,6 +291,21 @@ def _format_qr_item_flags(item_ids: list[str]) -> str:
     return " ".join(f"--qr-item {id}" for id in item_ids)
 
 
+def _max_severity(items: list[dict]) -> str:
+    """Return the highest severity among items in a group.
+
+    Unknown severity values are treated as MUST (safe default: routes to
+    Sonnet rather than Haiku, surfaces malformed QR files via conservative
+    routing). Empty items list returns SHOULD.
+    """
+    order = {"MUST": 2, "SHOULD": 1, "COULD": 0}
+    return max(
+        (i.get("severity", "SHOULD") for i in items),
+        key=lambda s: order.get(s, 2),  # unknown -> MUST priority (safe)
+        default="SHOULD",
+    )
+
+
 def qr_verify_step(title, phase):
     """Steps 5, 9, 13: Parallel QR verification with group-aware dispatch.
 
@@ -316,7 +334,7 @@ def qr_verify_step(title, phase):
 
         # Dispatch only items at blocking severity for current iteration.
         iteration = qr_state.get("iteration", 1)
-        items = query_items(qr_state, by_status("TODO", "FAIL"), by_blocking_severity(iteration))
+        items = query_items(qr_state, by_status("TODO", "FAIL"), by_blocking_severity(iteration, state_dir))
         if not items:
             next_step = step + 1
             return {
@@ -354,13 +372,10 @@ Start: python3 -m {verify_script} --step 1 --state-dir {state_dir} $qr_item_flag
 
         command = f"python3 -m {verify_script} --step 1 --state-dir {state_dir} $qr_item_flags"
 
-        dispatch_text = template_dispatch(
-            agent_type="quality-reviewer",
-            template=tmpl,
-            targets=targets,
-            command=command,
-            instruction=f"Verify {len(groups)} groups ({len(items)} items) in parallel.",
-        )
+        # Split targets: COULD-only groups use Haiku; all others use Sonnet.
+        group_ids = list(groups.keys())
+        sonnet_targets = [t for gid, t in zip(group_ids, targets) if _max_severity(groups[gid]) != "COULD"]
+        haiku_targets  = [t for gid, t in zip(group_ids, targets) if _max_severity(groups[gid]) == "COULD"]
 
         action_children = [
             ORCHESTRATOR_CONSTRAINT_EXTENDED,
@@ -369,8 +384,32 @@ Start: python3 -m {verify_script} --step 1 --state-dir {state_dir} $qr_item_flag
             "",
             f"VERIFY: {len(items)} items",
             "",
-            dispatch_text,
-            "",
+        ]
+
+        # Emit a single dispatch block to avoid contradictory PARALLEL_CONSTRAINT
+        # banners. COULD-only groups are listed after MUST/SHOULD groups so the
+        # orchestrator can see which ones are lower-priority, but all agents are
+        # dispatched in one message. Mixed-model per-agent support would require
+        # a new dispatch primitive; for now all agents use the default model.
+        all_targets = sonnet_targets + haiku_targets
+        if all_targets:
+            instr_parts = []
+            if sonnet_targets:
+                instr_parts.append(f"{len(sonnet_targets)} groups (MUST/SHOULD)")
+            if haiku_targets:
+                instr_parts.append(f"{len(haiku_targets)} groups (COULD-only)")
+            instr = f"Verify {' and '.join(instr_parts)} in parallel."
+            dispatch = template_dispatch(
+                agent_type="quality-reviewer",
+                template=tmpl,
+                targets=all_targets,
+                command=command,
+                instruction=instr,
+            )
+            action_children.append(dispatch)
+            action_children.append("")
+
+        action_children += [
             f"=== PHASE 2: AGGREGATE (your action after all agents return) ===",
             "",
             f"After ALL {len(groups)} agents return, tally results mechanically:",

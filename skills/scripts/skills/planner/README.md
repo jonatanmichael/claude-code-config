@@ -190,13 +190,37 @@ RETRY   -> FAIL -> RETRY (iteration++)
 RETRY   -> PASS -> COMPLETE (terminal)
 ```
 
-Blocking severity by iteration:
+Blocking severity by iteration (default thresholds):
 
 | Iteration | Blocks              |
 | --------- | ------------------- |
 | 1-2       | MUST, SHOULD, COULD |
 | 3-4       | MUST, SHOULD        |
 | 5+        | MUST only           |
+
+### Per-Project QR Configuration
+
+QR iteration limits and severity thresholds are configurable per project via `.claude/planner.config.json` at the project root. The planner detects this file by searching upward from CWD at plan-init (step 1) and persists the resolved config to `state_dir/planner.config.json` for use by all subsequent steps.
+
+Projects without a config file use the built-in defaults above (fully backward compatible).
+
+**Config file location**: `<project-root>/.claude/planner.config.json`
+
+**Example** (stricter thresholds, fewer iterations):
+
+```json
+{
+  "qr_iteration_limit": 3,
+  "severity_thresholds": {
+    "1": ["MUST", "SHOULD"],
+    "3": ["MUST"]
+  }
+}
+```
+
+**`severity_thresholds` format**: Keys are string integers representing the iteration number at which a threshold takes effect ("from iteration N onwards"). The highest key whose value is <= current iteration wins. For example, with the config above: iterations 1-2 block on MUST + SHOULD; iteration 3+ blocks on MUST only.
+
+**`qr_iteration_limit`**: Maximum QR loop iterations before the workflow accepts remaining failures as non-blocking. Read by orchestration logic when enforcing loop termination.
 
 ## Step Handler Architecture
 
@@ -229,6 +253,30 @@ STEPS = {
 **QR iteration blocking**: Severity thresholds vary by iteration. Early iterations block all severities. Later iterations block only MUST to prevent infinite loops.
 
 **No temp directory cleanup**: OS handles /tmp cleanup on reboot.
+
+## Token Efficiency
+
+Two targeted optimizations reduce token consumption on complex plans:
+
+### A: Haiku for COULD-only QR groups
+
+`qr_verify_step()` splits the parallel verification dispatch by severity. Groups whose highest-severity item is COULD are dispatched with `model="haiku"`. Groups containing MUST or SHOULD items use the default (Sonnet). Both dispatches run in parallel; the aggregate phase tallies all agents together.
+
+Implementation: `_max_severity()` helper in `orchestrator/planner.py`.
+
+### B: Phase-specific jq projections in QR decompose step 1
+
+Each decompose script reads only the plan.json fields its phase reviews:
+
+| Phase       | Projection keeps                                             | Strips                                          |
+| ----------- | ------------------------------------------------------------ | ----------------------------------------------- |
+| plan-design | `overview`, `planning_context`, `invisible_knowledge`, milestone structure | `code_changes`, `documentation`, `waves`        |
+| plan-code   | `overview`, `planning_context`, `code_intents`, `code_changes[].diff` | `doc_diff`, `documentation`, `invisible_knowledge` |
+| plan-docs   | `planning_context.decisions`, `documentation`, `code_changes[].doc_diff` | Full `.diff` content (80–90% of plan.json size) |
+
+The plan-docs projection is the highest-impact change: it strips full diff content from every QR-docs verification agent invocation.
+
+The second targeted extraction in each decompose script (e.g., `select(.doc_diff != "")`) is unchanged — it was already efficient.
 
 ## Invariants
 

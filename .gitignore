@@ -26,3 +26,6 @@
 **/.venv
 **/*.pyc
 .claude/*
+
+# Local analysis docs (not for tracking)
+docs/

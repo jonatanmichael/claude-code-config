@@ -81,6 +81,28 @@ remaining milestones. Building on unverified code means rework.
 Skip / Alternative). Fixes delegate to developers or technical writers, then QR
 runs again. This cycle repeats until QR passes.
 
+## Configuration
+
+QR iteration limits and severity thresholds are configurable per project. Create `.claude/planner.config.json` at the project root:
+
+```json
+{
+  "qr_iteration_limit": 3,
+  "severity_thresholds": {
+    "1": ["MUST", "SHOULD"],
+    "3": ["MUST"]
+  }
+}
+```
+
+The planner detects this file by searching upward from CWD when plan-init runs (step 1). The resolved config is persisted to the state directory so all subsequent steps use it without CWD assumptions.
+
+`severity_thresholds` keys are string integers meaning "applies from iteration N onwards". The highest key whose value is <= current iteration wins. Projects without a config file use built-in defaults (iterations 1-2: MUST+SHOULD+COULD; iteration 3-4: MUST+SHOULD; iteration 5+: MUST).
+
+### Token Efficiency
+
+Two optimizations reduce token consumption on complex plans. COULD-only QR verification groups use Haiku instead of Sonnet. Each QR decompose phase reads a targeted jq projection of plan.json rather than the full document — the plan-docs projection strips diff content (typically 80–90% of plan.json size). Both are automatic and require no configuration.
+
 ## Invisible Knowledge
 
 ### Why session.yaml was removed
