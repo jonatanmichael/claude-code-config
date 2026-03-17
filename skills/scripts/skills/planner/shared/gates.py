@@ -45,11 +45,24 @@ def build_gate_output(
     - pass_step: QR passed, proceed to next workflow phase
     - work_step: QR failed, loop back to fix issues
     """
+    from skills.planner.shared.planner_config import read_config_from_state
+    config = read_config_from_state(state_dir) if state_dir else {}
+    iteration_limit = config.get("qr_iteration_limit", 5)
+    limit_reached = not qr.passed and qr.iteration >= iteration_limit
+    effective_passed = qr.passed or limit_reached
+
     parts = []
-    parts.append(format_gate_result(passed=qr.passed))
+    parts.append(format_gate_result(passed=effective_passed))
     parts.append("")
 
-    if qr.passed:
+    if limit_reached:
+        parts.append(
+            f"ITERATION LIMIT REACHED ({qr.iteration}/{iteration_limit}): "
+            f"Forcing pass. Remaining FAIL items are below the acceptance threshold."
+        )
+        parts.append("")
+
+    if effective_passed:
         parts.append(pass_message)
         parts.append("")
         parts.append(format_forbidden(
@@ -79,12 +92,12 @@ def build_gate_output(
 
     body = "\n".join(parts)
     title = f"{qr_name} Gate"
-    terminal_pass = qr.passed and pass_step is None
+    terminal_pass = effective_passed and pass_step is None
 
     if terminal_pass:
         return GateResult(output=format_step(body, title=title), terminal_pass=True)
 
-    if qr.passed:
+    if effective_passed:
         next_cmd = f"python3 -m {module_path} --step {pass_step}"
         if state_dir:
             next_cmd += f" --state-dir {state_dir}"

@@ -23,8 +23,15 @@ PHASE = "plan-code"
 
 
 STEP_1_ABSORB = """\
-Read plan.json from STATE_DIR:
-  cat $STATE_DIR/plan.json | jq '.'
+Read plan.json from STATE_DIR (plan-code projection — strips doc/knowledge content):
+  cat $STATE_DIR/plan.json | jq '{
+    overview,
+    planning_context,
+    milestones: [.milestones[] | {
+      id, number, name, code_intents,
+      code_changes: [.code_changes[] | {id, intent_ref, file, diff}]
+    }]
+  }'
 
 SCOPE: Code correctness in planned changes.
 
