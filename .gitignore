@@ -1,3 +1,6 @@
+# Ignore all by default
+*
+
 # Track these directories and their contents
 !.github/
 !.github/**

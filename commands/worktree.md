@@ -32,4 +32,52 @@ Follow these steps exactly:
       git worktree add -b $ARGUMENTS <worktree-path> origin/main
       ```
 
-5. After creating the worktree, report the full path to the user so they can open it.
+5. **Auto-install claude-code-config if installed per-project:**
+
+   a. Check whether `<repo-root>/.claude/.git` exists **and** that its remote URL is the claude-code-config repo:
+      ```bash
+      [ -d <repo-root>/.claude/.git ] && echo "has_git" || echo "no_git"
+      ```
+      If `has_git`, also verify the remote URL by checking both `origin` and `workflow` remotes:
+      ```bash
+      git -C <repo-root>/.claude remote get-url origin 2>/dev/null | grep -q "jonatanmichael/claude-code-config" && echo "url_match" || \
+      git -C <repo-root>/.claude remote get-url workflow 2>/dev/null | grep -q "jonatanmichael/claude-code-config" && echo "url_match" || echo "no_match"
+      ```
+
+   b. Skip silently and proceed to step 6 if **either** condition is true:
+      - `<repo-root>/.claude/.git` does not exist, **or**
+      - neither the `origin` nor `workflow` remote URL contains `jonatanmichael/claude-code-config`
+
+   c. If it does exist (`has_git`), perform a per-project installation into the new worktree. Follow the **Per-project** path from `<repo-root>/.claude/INSTALL.md` — specifically **Step 3 only** — treating `<worktree-path>` as the current directory. Skip Steps 1, 2, 3.5, 4, and 5 from that file.
+
+      Check whether `<worktree-path>/.claude` exists and has git history:
+      ```bash
+      [ -d <worktree-path>/.claude/.git ] && echo "has_git" || echo "no_git"
+      ```
+
+      **Case A — `<worktree-path>/.claude` does not exist:**
+      ```bash
+      git clone https://github.com/jonatanmichael/claude-code-config.git <worktree-path>/.claude
+      ```
+
+      **Case B — `<worktree-path>/.claude` exists but has no git history:**
+      ```bash
+      git -C <worktree-path>/.claude init
+      git -C <worktree-path>/.claude remote add workflow https://github.com/jonatanmichael/claude-code-config.git
+      git -C <worktree-path>/.claude fetch workflow
+      git -C <worktree-path>/.claude merge workflow/main --allow-unrelated-histories -m "Install claude-code-workflow"
+      ```
+
+      **Case C — `<worktree-path>/.claude` exists and already has git history:**
+      ```bash
+      git -C <worktree-path>/.claude remote add workflow https://github.com/jonatanmichael/claude-code-config.git
+      git -C <worktree-path>/.claude fetch workflow
+      git -C <worktree-path>/.claude merge workflow/main --allow-unrelated-histories -m "Install claude-code-workflow"
+      ```
+
+      If the merge produces conflicts, stop and tell the user which files conflict. Do not resolve conflicts automatically.
+
+   d. After installation, tell the user:
+      > claude-code-config was automatically installed in `<worktree-path>/.claude/`.
+
+6. After creating the worktree, report the full path to the user so they can open it.
