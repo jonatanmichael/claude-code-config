@@ -18,6 +18,8 @@ All tests must live in `tests/` and run through pytest. No test files elsewhere 
 | `test_domain_types.py`       | Unit tests for BoundedInt, ChoiceSet, Constant       | Testing domain type behavior               |
 | `test_generation.py`         | Schema extraction and input generation for tests     | Modifying test case generation             |
 | `test_ast.py`                | Property-based AST node and renderer tests           | Testing AST construction and rendering     |
+| `test_impl_qr_orchestration.py` | Structural tests for impl_code_qr and impl_docs_qr entry points | Debugging impl-code/impl-docs QR orchestration |
+| `test_qr_verify_routing.py`  | Routing tests for QR verify sub-scripts              | Debugging verify routing behavior          |
 
 ## Test Execution
 
