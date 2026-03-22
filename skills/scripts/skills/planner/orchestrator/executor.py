@@ -267,7 +267,12 @@ def format_gate(step: int, gate: GateConfig, qr: QRState, total_steps: int) -> s
 
 
 def format_step_3_implementation(qr: QRState, total_steps: int, milestone_count: int) -> str:
-    """Format step 3 implementation output."""
+    """Format step 3 implementation output.
+
+    In fix mode dispatches to the exec_implement.py router (developer/exec-implement.py) with
+    --state-dir so the router detects fix mode via QR state files rather than defaulting to
+    execute mode. Direct leaf dispatch bypasses routing and breaks fix-mode detection. (ref: DL-001, DL-002)
+    """
     if qr.state == LoopState.RETRY:
         title = "Implementation - Fix Mode"
     else:
@@ -282,8 +287,9 @@ def format_step_3_implementation(qr: QRState, total_steps: int, milestone_count:
         actions.append(ORCHESTRATOR_CONSTRAINT)
         actions.append("")
 
-        mode_script = get_mode_script_path("dev/fix-code.py")
-        invoke_cmd = f"python3 -m {mode_script} --step 1 --qr-fail --qr-iteration {qr.iteration}"
+        # dev/fix-code.py resolves to non-existent skills.planner.dev.fix_code; use router so it detects fix mode via QR state files
+        mode_script = get_mode_script_path("developer/exec-implement.py")
+        invoke_cmd = f"python3 -m {mode_script} --step 1 --qr-fail --qr-iteration {qr.iteration} --state-dir $STATE_DIR"
 
         actions.append(subagent_dispatch(
             agent_type="developer",
@@ -339,7 +345,12 @@ def format_step_3_implementation(qr: QRState, total_steps: int, milestone_count:
 
 
 def format_step_6_documentation(qr: QRState, total_steps: int) -> str:
-    """Format step 6 documentation output."""
+    """Format step 6 documentation output.
+
+    In fix mode dispatches to the exec_docs.py router with --state-dir so the router detects
+    fix mode via QR state files rather than defaulting to execute mode. Direct leaf dispatch
+    bypasses routing and breaks fix-mode detection. (ref: DL-002)
+    """
     mode_script = get_mode_script_path("technical_writer/exec-docs.py")
 
     if qr.state == LoopState.RETRY:
@@ -357,7 +368,8 @@ def format_step_6_documentation(qr: QRState, total_steps: int) -> str:
         actions.append(ORCHESTRATOR_CONSTRAINT)
         actions.append("")
 
-        invoke_cmd = f"python3 -m {mode_script} --step 1 --qr-fail --qr-iteration {qr.iteration}"
+        # Router defaults to execute mode when state_dir is None; pass --state-dir so it detects fix mode via QR state files
+        invoke_cmd = f"python3 -m {mode_script} --step 1 --qr-fail --qr-iteration {qr.iteration} --state-dir $STATE_DIR"
         actions.append(subagent_dispatch(
             agent_type="technical-writer",
             command=invoke_cmd,
@@ -515,6 +527,7 @@ def format_output(step: int,
     info = STEPS.get(step, STEPS[9])
 
     # Handle QR step in fix mode (developer/TW fixes, not QR re-run)
+    # --state-dir is required so the fix target router detects fix mode via QR state files. (ref: DL-002, DL-003)
     if info.get("is_qr") and qr.state == LoopState.RETRY:
         post_qr_config = info.get("post_qr_routing", {})
         fix_target = post_qr_config.get("fix_target", "developer")

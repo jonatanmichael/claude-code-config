@@ -1,6 +1,6 @@
 # orchestrator/
 
-Main entry points for the plan-execute workflow.
+Main planner entry points: multi-step plan creation and step-by-step plan execution.
 
 ## Files
 
