@@ -1,6 +1,6 @@
-# qr/
+# quality_reviewer/
 
-Quality Review modules with QA state tracking integration.
+Quality Review modules for all plan phases, with QA decomposition and verification.
 
 ## Files
 
