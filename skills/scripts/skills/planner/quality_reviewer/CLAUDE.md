@@ -4,24 +4,20 @@ Quality Review modules for all plan phases, with QA decomposition and verificati
 
 ## Files
 
-| File                        | What                                                   | When to read                                   |
-| --------------------------- | ------------------------------------------------------ | ---------------------------------------------- |
-| `README.md`                 | QR architecture, QA integration, state file naming     | Understanding QR workflow, phase state files   |
-| `qr_verify_base.py`         | Base verification logic shared across QR phases        | Modifying shared verification behavior         |
-| `exec_reconcile.py`         | Reconciliation between plan and implementation         | Modifying reconciliation step                  |
-| `impl_code_qr_decompose.py` | Decomposes impl-code QA into verifiable items          | Modifying Code QR decomposition                |
-| `impl_code_qr_verify.py`    | Verifies individual impl-code QA items                 | Modifying Code QR verification                 |
-| `impl_docs_qr_decompose.py` | Decomposes impl-docs QA into verifiable items          | Modifying Doc QR decomposition                 |
-| `impl_docs_qr_verify.py`    | Verifies individual impl-docs QA items                 | Modifying Doc QR verification                  |
-| `plan_code_qr_decompose.py` | Decomposes plan-code QA into verifiable items          | Modifying plan Code QR decomposition           |
-| `plan_code_qr_verify.py`    | Verifies individual plan-code QA items                 | Modifying plan Code QR verification            |
-| `plan_design_qr_decompose.py` | Decomposes plan-design QA into verifiable items      | Modifying plan design QR decomposition         |
-| `plan_design_qr_verify.py`  | Verifies individual plan-design QA items               | Modifying plan design QR verification          |
-| `plan_docs_qr_decompose.py` | Decomposes plan-docs QA into verifiable items          | Modifying plan docs QR decomposition           |
-| `plan_docs_qr_verify.py`    | Verifies individual plan-docs QA items                 | Modifying plan docs QR verification            |
-
-## Subdirectories
-
-| Directory | What                            | When to read                     |
-| --------- | ------------------------------- | -------------------------------- |
-| `prompts/` | Prompt templates for QR phases | Modifying QR prompt content      |
+| File                        | What                                                        | When to read                                              |
+| --------------------------- | ----------------------------------------------------------- | --------------------------------------------------------- |
+| `README.md`                 | QR architecture, QA integration, orchestration entry points | Understanding QR workflow, QA state tracking              |
+| `impl_code_qr.py`           | Orchestration entry point for impl-code QR phase            | Modifying impl-code QR pipeline, debugging executor step 4 |
+| `impl_docs_qr.py`           | Orchestration entry point for impl-docs QR phase            | Modifying impl-docs QR pipeline, debugging executor step 7 |
+| `impl_code_qr_decompose.py` | Decompose sub-script for impl-code phase                    | Modifying impl-code decomposition logic                   |
+| `impl_code_qr_verify.py`    | Verify sub-script for impl-code phase                       | Modifying impl-code verification logic                    |
+| `impl_docs_qr_decompose.py` | Decompose sub-script for impl-docs phase                    | Modifying impl-docs decomposition logic                   |
+| `impl_docs_qr_verify.py`    | Verify sub-script for impl-docs phase                       | Modifying impl-docs verification logic                    |
+| `exec_reconcile.py`         | Orchestration entry point for reconciliation QR phase       | Modifying reconciliation QR pipeline                      |
+| `qr_verify_base.py`         | Shared base logic for verify sub-scripts                    | Modifying verify behavior across phases                   |
+| `plan_code_qr_decompose.py` | Decompose sub-script for plan-code phase                    | Modifying plan-code decomposition logic                   |
+| `plan_code_qr_verify.py`    | Verify sub-script for plan-code phase                       | Modifying plan-code verification logic                    |
+| `plan_design_qr_decompose.py` | Decompose sub-script for plan-design phase                | Modifying plan-design decomposition logic                 |
+| `plan_design_qr_verify.py`  | Verify sub-script for plan-design phase                     | Modifying plan-design verification logic                  |
+| `plan_docs_qr_decompose.py` | Decompose sub-script for plan-docs phase                    | Modifying plan-docs decomposition logic                   |
+| `plan_docs_qr_verify.py`    | Verify sub-script for plan-docs phase                       | Modifying plan-docs verification logic                    |
