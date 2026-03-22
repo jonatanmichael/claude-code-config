@@ -76,11 +76,16 @@ SEVERITY ASSIGNMENT (per conventions/severity.md, impl-docs scope):
     - BASELINE_REFERENCE: comment references removed code
 
   SHOULD (iterations 1-4):
-    - CLAUDE.md format violations
-    - README.md missing where scope warrants
-    - WHY-not-WHAT violations
+    - CLAUDE.md format violations (ONLY for CLAUDE.md files created or modified
+      in this implementation; do NOT flag pre-existing CLAUDE.md files that were
+      not touched)
+    - README.md missing (ONLY when invisible_knowledge has content AND the
+      relevant directory contains modified files; do NOT flag directories where
+      no IK applies)
 
   COULD (iterations 1-3):
+    - WHY-not-WHAT violations (subjective; flag only clear WHAT-only comments
+      with zero rationale, not comments that partially explain why)
     - Minor formatting inconsistencies
     - Documentation style variations"""
 
