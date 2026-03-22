@@ -276,3 +276,33 @@ QR gates invoke QA decomposition before performing reviews:
    - FAIL: invoke fixer, loop back to verification
 
 This integration provides structured, parallelizable verification with explicit failure tracking and automated retry logic.
+
+## Orchestration Entry Points (impl-code / impl-docs)
+
+`impl_code_qr.py` and `impl_docs_qr.py` are the unified entry points dispatched
+by executor.py for post-implementation quality review. They act as thin
+sub-orchestrators: they do not implement decompose or verify logic themselves.
+
+### Pipeline
+
+```
+Step 1  Decompose   invoke impl_{phase}_qr_decompose through all its steps
+Step 2  Fan-Out     group qr-{phase}.json items by group_id; dispatch one Task
+                    per group calling impl_{phase}_qr_verify with --qr-item flags;
+                    fall back to sequential if Task tool is unavailable
+Step 3  Aggregate   re-read qr-{phase}.json; count PASS/FAIL/UNVERIFIED;
+                    items missing a verify result are UNVERIFIED (fail)
+Step 4  Report      output PASS or ISSUES XML grouped by milestone;
+                    format is LLM-consumed by executor gate (not parsed)
+```
+
+### Invariants
+
+- PHASE constant in the entry point must exactly match the constant in the
+  corresponding decompose and verify sub-scripts. State file qr-{PHASE}.json
+  lookup depends on this.
+- The two files share identical structure; only PHASE and module path strings
+  differ. Changes to pipeline structure must be applied to both files.
+- executor.py STEPS[4] pre_dispatch block runs before the quality-reviewer is
+  dispatched. impl_code_qr.py is what the quality-reviewer itself runs -- these
+  are separate concerns.
