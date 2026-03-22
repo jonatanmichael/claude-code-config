@@ -38,6 +38,16 @@ from skills.planner.shared.constraints import (
 # Module path for -m invocation
 MODULE_PATH = "skills.planner.orchestrator.executor"
 
+# Maps fix_target values to their router entry points. Avoids f"{fix_target}/fix.py"
+# which resolves to nonexistent modules (developer/fix.py, technical_writer/fix.py).
+# KeyError on unknown fix_target is intentional: forces explicit registration for any
+# new AgentRole rather than silently dispatching a broken path. (ref: DL-001, DL-002)
+# When adding a new AgentRole, add its entry here or dispatch fails with KeyError.
+FIX_ROUTER_MAP = {
+    "developer": "developer/exec-implement.py",
+    "technical-writer": "technical_writer/exec-docs.py",
+}
+
 
 def detect_reconciliation_signals(user_request: str) -> bool:
     """Detect if user request requires reconciliation phase."""
@@ -226,6 +236,8 @@ def format_gate(step: int, gate: GateConfig, qr: QRState, total_steps: int) -> s
         parts.append(PEDANTIC_ENFORCEMENT)
         parts.append("")
 
+        # gate.fix_target.value is used here for display text only.
+        # It is unrelated to FIX_ROUTER_MAP dispatch in handle_qr_step_generic.
         fix_target = gate.fix_target.value if gate.fix_target else "developer"
         parts.append("NEXT ACTION:")
         parts.append("  Invoke the next step command.")
@@ -516,9 +528,12 @@ def format_output(step: int,
         fix_actions.append(ORCHESTRATOR_CONSTRAINT)
         fix_actions.append("")
 
-        mode_script = get_mode_script_path(f"{fix_target}/fix.py")
-        invoke_cmd = f"python3 -m {mode_script} --step 1 --qr-fail --qr-iteration {qr.iteration}"
+        # KeyError on unknown fix_target is intentional -- no try/except. (ref: DL-001)
+        mode_script = get_mode_script_path(FIX_ROUTER_MAP[fix_target])
+        invoke_cmd = f"python3 -m {mode_script} --step 1 --qr-fail --qr-iteration {qr.iteration} --state-dir $STATE_DIR"
 
+        # fix_target is dual-use: it must match a FIX_ROUTER_MAP key (above) AND the
+        # agent_type passed here -- they are the same string.
         fix_actions.append(subagent_dispatch(
             agent_type=fix_target,
             command=invoke_cmd,
