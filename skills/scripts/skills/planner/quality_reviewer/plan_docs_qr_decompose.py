@@ -28,8 +28,14 @@ PHASE = "plan-docs"
 # =============================================================================
 
 STEP_1_ABSORB = """\
-Read plan.json from STATE_DIR:
-  cat $STATE_DIR/plan.json | jq '.'
+Read plan.json from STATE_DIR (plan-docs projection — strips diff/code content, keeps doc_diff only):
+  cat $STATE_DIR/plan.json | jq '{
+    planning_context: {decisions},
+    milestones: [.milestones[] | {
+      id, number, name, documentation,
+      code_changes: [.code_changes[] | {id, file, doc_diff, comments}]
+    }]
+  }'
 
 SCOPE: Documentation quality only. You verify doc_diff fields.
 

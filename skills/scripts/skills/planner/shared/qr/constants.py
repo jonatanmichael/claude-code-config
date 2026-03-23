@@ -52,15 +52,20 @@ def get_qa_state_file(phase: str) -> str:
     return f"qr-{phase}.json"
 
 
-def get_blocking_severities(iteration: int) -> frozenset[str]:
+def get_blocking_severities(iteration: int, config: "dict | None" = None) -> frozenset[str]:
     """Return severities that block at given iteration.
+
+    When config is provided with a 'severity_thresholds' key, uses those
+    thresholds instead of built-in defaults. Threshold keys are string
+    integers (e.g., "1", "3", "4") meaning "applies from iteration N onwards".
+    The highest key <= iteration wins.
 
     Progressive de-escalation narrows blocking scope as iterations
     increase, accepting lower-severity issues rather than looping
     indefinitely:
-        iteration 1-2: MUST + SHOULD + COULD
-        iteration 3:   MUST + SHOULD
-        iteration 4+:  MUST only
+        default iteration 1-2: MUST + SHOULD + COULD
+        default iteration 3:   MUST + SHOULD
+        default iteration 4+:  MUST only
 
     Threshold rationale per conventions/severity.md:
     - Iterations 1-2 give full coverage (all severities verified).
@@ -71,10 +76,22 @@ def get_blocking_severities(iteration: int) -> frozenset[str]:
 
     Args:
         iteration: QR loop iteration count (1-indexed)
+        config: Optional planner config dict (from planner_config module).
+                When None, uses built-in thresholds.
 
     Returns:
         Frozenset of severity strings that block at this iteration
     """
+    if config and "severity_thresholds" in config:
+        thresholds = config["severity_thresholds"]
+        # Find the highest key whose int value is <= iteration
+        applicable: list[str] = ["MUST"]  # safe fallback
+        for key_str in sorted(thresholds.keys(), key=lambda k: int(k)):
+            if iteration >= int(key_str):
+                applicable = thresholds[key_str]
+        return frozenset(applicable)
+
+    # Built-in thresholds (no config or config missing severity_thresholds)
     if iteration >= 4:
         return frozenset({"MUST"})
     if iteration >= 3:
