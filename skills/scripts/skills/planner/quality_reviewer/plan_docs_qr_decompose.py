@@ -58,10 +58,10 @@ Brainstorm concerns specific to DOC_DIFF QUALITY:
   - Temporal contamination in doc_diff content
   - Missing WHY-not-WHAT (comments describe code, not explain reasoning)
   - Incomplete decision coverage (DL-XXX not referenced in any doc_diff)
-  - Invalid diff format (doc_diff not valid unified diff)
 
 DO NOT brainstorm code correctness concerns (out of scope for this phase).
-DO NOT review diff field content (plan-code's job)."""
+DO NOT review diff field content (plan-code's job).
+# Diff format validity excluded: TW scope is KNOWLEDGE transfer only, not structural/syntactic correctness."""
 
 
 STEP_3_ENUMERATION = """\
@@ -69,7 +69,7 @@ For plan-docs, enumerate DOC_DIFF content only:
 
 ARTIFACTS TO VERIFY:
   - Each code_change with non-empty doc_diff:
-    * Diff format validity (unified diff syntax)
+    # Diff format validity excluded: structural/syntactic check outside TW KNOWLEDGE scope.
     * Temporal contamination (change-relative language)
     * WHY-not-WHAT (comments explain reasoning)
     * Decision references (DL-XXX present)
@@ -93,7 +93,7 @@ SEVERITY ASSIGNMENT for plan-docs (doc_diff focused):
   MUST (blocks all iterations):
     - CODE_WITHOUT_DOCS: code_change has diff but no doc_diff
     - DECISION_UNCOVERED: DL-XXX not in any doc_diff
-    - INVALID_DIFF_FORMAT: doc_diff not valid unified diff
+    # INVALID_DIFF_FORMAT excluded: diff format validation is structural/syntactic, outside TW KNOWLEDGE scope.
     - TEMPORAL_CONTAMINATION: change-relative language in doc_diff
 
   SHOULD (iterations 1-4):
