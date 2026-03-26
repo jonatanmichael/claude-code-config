@@ -17,20 +17,31 @@ from skills.planner.quality_reviewer.prompts.decompose import dispatch_step
 PHASE = "impl-docs"
 
 
+# STEP_1_ABSORB uses a jq expression to extract the modified file list from plan.json.
+# Primary source: milestones[].code_changes[].file (populated after implementation).
+# Fallback: milestones[].files[] when code_changes is empty (e.g., plan has no diffs yet).
+# unique deduplicates paths that appear in multiple milestones. (refs: DL-002, DL-003, DL-005)
 STEP_1_ABSORB = """\
 Read plan.json from STATE_DIR:
   cat $STATE_DIR/plan.json | jq '.'
 
-Also read documentation files in modified directories:
-  - CLAUDE.md files
-  - README.md files
-  - Comments in source files
+Extract the modified file list:
+  cat $STATE_DIR/plan.json | jq 'if ([.milestones[].code_changes[].file] | length) > 0 then [.milestones[].code_changes[].file] | unique else [.milestones[].files[]] | unique end'
+
+If code_changes is empty, falls back to milestones[].files.
+
+Read ONLY documentation files adjacent to those modified files:
+  - CLAUDE.md files in each directory that contains a modified file
+  - README.md files in each directory that contains a modified file
+  - Comments in source files that appear in the list above
+
+Do NOT read files outside this list or their immediate directories.
 
 SCOPE: Post-implementation documentation quality.
 
 Focus on:
   - invisible_knowledge section (was it transferred?)
-  - Modified directory list (need docs?)
+  - Modified file list (need docs in those directories?)
   - CLAUDE.md format compliance
   - README.md presence where required
 

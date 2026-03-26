@@ -168,6 +168,11 @@ STEPS = {
         "is_dispatch": True,
         "dispatch_agent": "quality-reviewer",
         "mode_script": "quality_reviewer/impl-docs-qr.py",
+        # invoke_suffix threads --state-dir to impl_docs_qr.py, which passes it to
+        # impl_docs_qr_decompose.py via step handlers. STEPS[7] delegates to
+        # impl_docs_qr.py (unlike STEPS[4] which uses pre_dispatch directly),
+        # so pre_dispatch is empty and invoke_suffix is the injection point. (ref: DL-001)
+        "invoke_suffix": " --state-dir $STATE_DIR",
         "post_dispatch": [
             "The sub-agent will invoke the script and follow its guidance.",
             "",

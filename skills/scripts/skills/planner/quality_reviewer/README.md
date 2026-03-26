@@ -306,3 +306,26 @@ Step 4  Report      output PASS or ISSUES XML grouped by milestone;
 - executor.py STEPS[4] pre_dispatch block runs before the quality-reviewer is
   dispatched. impl_code_qr.py is what the quality-reviewer itself runs -- these
   are separate concerns.
+- STEPS[4] and STEPS[7] use different state_dir injection architectures. STEPS[4]
+  manually orchestrates decompose in pre_dispatch (direct control). STEPS[7]
+  delegates to impl_docs_qr.py which sub-delegates to decompose via step handlers
+  (indirect delegation). For STEPS[7], state_dir is injected via invoke_suffix
+  (appended to the mode_script invocation), not pre_dispatch. The propagation chain
+  is: executor STEPS dict -> format_step_7_doc_qr -> impl_docs_qr.py --state-dir
+  arg -> step_handler -> decompose sub-step.
+
+### STEP_1_ABSORB Scope Constraint
+
+`impl_docs_qr_decompose.py` STEP_1_ABSORB extracts the modified file list from
+plan.json using jq on `milestones[].code_changes[].file` (actual diff targets).
+It falls back to `milestones[].files[]` when code_changes is empty to avoid an
+empty list that would block all reads.
+
+The negative constraint "Do NOT read files outside this list" is required because
+LLM agents follow vague scope instructions broadly, scanning the entire codebase
+when given only a positive instruction. The explicit negative boundary is the
+standard pattern for LLM scope restriction in this codebase.
+
+`code_changes[].file` is preferred over `milestones[].files` because it captures
+actual diff targets with precision. `milestones[].files` may include files listed
+in the plan that were not actually modified.
