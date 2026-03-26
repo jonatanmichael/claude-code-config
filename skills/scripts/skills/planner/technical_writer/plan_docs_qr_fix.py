@@ -9,7 +9,7 @@
 Scope: Documentation quality only -- fixing issues in documentation fields.
 TW can fix:
 - Temporal contamination in documentation strings
-- Missing WHY comments (add inline_comments/function_blocks)
+- Missing WHY comments (add function_blocks)
 - Invalid decision_refs (correct or add missing refs)
 - Structural completeness gaps (populate empty documentation{} fields)
 - README content gaps (add to readme_entries[])
@@ -44,6 +44,7 @@ STEPS = {
 def get_step_guidance(
     step: int, module_path: str = None, **kwargs) -> dict:
     """Return guidance for the given step."""
+
     MODULE_PATH = module_path or "skills.planner.technical_writer.plan_docs_qr_fix"
     state_dir = kwargs.get("state_dir", "")
     PHASE = "plan-docs"
@@ -85,7 +86,7 @@ def get_step_guidance(
                 "",
                 "FIXABLE ISSUE TYPES (address these):",
                 "  - Temporal contamination in comments",
-                "  - Missing WHY comments (add inline_comments/function_blocks)",
+                "  - Missing WHY comments (add function_blocks)",
                 "  - Invalid decision_refs (correct the reference)",
                 "  - Structural completeness gaps (populate documentation{} fields)",
                 "  - README content gaps (add to readme_entries[])",

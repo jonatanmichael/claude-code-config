@@ -28,4 +28,5 @@
 **/.hypothesis
 **/.venv
 **/*.pyc
-.claude/*
+.claude/*.worktrees
+.worktrees/

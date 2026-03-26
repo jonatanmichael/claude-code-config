@@ -53,6 +53,7 @@ STEPS = {
 def get_step_guidance(
     step: int, module_path: str = None, **kwargs) -> dict:
     """Return guidance for the given step."""
+
     MODULE_PATH = module_path or "skills.planner.technical_writer.plan_docs_execute"
     state_dir = kwargs.get("state_dir", "")
 
@@ -169,14 +170,13 @@ def get_step_guidance(
                 "     - Module comment (new files)",
                 "     - Function docstrings (all functions in diff)",
                 "     - Function blocks (Tier 2: WHY for complex functions)",
-                "     - Inline comments (Tier 1: WHY for non-obvious lines)",
                 "",
                 "  3. CROSS-REFERENCE with planning_context.decisions[]",
                 "     - Each decision should appear in at least one doc_diff",
                 "     - Reference format: (ref: DL-XXX) or (DL-XXX)",
                 "",
                 "  4. LIST documentation needed per code_change:",
-                "     CC-M-001-001: module comment, 2 docstrings, 1 inline (DL-002)",
+                "     CC-M-001-001: module comment, 2 docstrings (DL-002)",
                 "     CC-M-002-001: 3 docstrings, 1 function block (DL-010)",
                 "",
                 "This analysis drives Step 4.",
