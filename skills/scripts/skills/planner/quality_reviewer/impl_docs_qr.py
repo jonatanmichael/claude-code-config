@@ -190,8 +190,8 @@ if __name__ == "__main__":
         get_step_guidance,
         "QR-Impl-Docs: Orchestrate impl-docs quality review pipeline",
         extra_args=[
-            # default="" because executor.py invokes with "--step 1" only (no --state-dir);
-            # agent receives state_dir from its prompt context injected by executor pre_dispatch.
+            # required=False with default="" for backward compatibility;
+            # executor.py STEPS[7] invoke_suffix injects --state-dir at dispatch time. (ref: DL-004)
             (["--state-dir"], {"type": str, "default": "", "help": "State directory path"}),
         ],
     )

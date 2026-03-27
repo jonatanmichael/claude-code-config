@@ -31,6 +31,7 @@ STEPS = {
 def get_step_guidance(
     step: int, module_path: str = None, **kwargs) -> dict:
     """Return guidance for the given step."""
+
     MODULE_PATH = module_path or "skills.planner.technical_writer.exec_docs_qr_fix"
     state_dir = kwargs.get("state_dir", "")
     PHASE = "impl-docs"
@@ -91,7 +92,6 @@ def get_step_guidance(
                 "",
                 "IK proximity failures:",
                 "  - Move knowledge to README.md in SAME directory as code",
-                "  - Add inline comments at enforcement points",
                 "  - Remove references to external doc/ directories",
                 "",
                 "Temporal contamination:",
