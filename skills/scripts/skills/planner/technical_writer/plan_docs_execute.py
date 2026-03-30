@@ -186,9 +186,13 @@ def get_step_guidance(
 
     elif step == 4:
         state_dir_arg = f" --state-dir {state_dir}" if state_dir else ""
+        temporal_convention = get_convention("temporal.md")
         return {
             "title": STEPS[4],
             "actions": [
+                "MENTAL MODEL: Write as if the plan is already executed.",
+                "You are not documenting a change — you are documenting the system that exists.",
+                "",
                 "GENERATE doc_diff for each code_change:",
                 "",
                 "doc_diff is a unified diff that ONLY adds documentation.",
@@ -220,9 +224,13 @@ def get_step_guidance(
                 "  python3 -m skills.planner.cli.plan --state-dir $STATE_DIR set-doc-diff \\",
                 "    --change CC-M-001-001 --version 1 --content-file /tmp/doc.diff",
                 "",
-                "TEMPORAL CONTAMINATION CHECK before writing:",
-                "  - BAD: 'Added to support...', 'Now uses...', 'Changed from...'",
-                "  - GOOD: Timeless present tense describing what IS",
+                "TEMPORAL CONTAMINATION — read before writing any comment:",
+                temporal_convention,
+                "",
+                format_as_prose(),
+                "",
+                "ACTIONS per detection type:",
+                format_actions(),
             ],
             "next": f"python3 -m {MODULE_PATH} --step 5{state_dir_arg}",
         }
