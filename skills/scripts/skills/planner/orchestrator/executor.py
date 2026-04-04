@@ -125,6 +125,7 @@ STEPS = {
     },
     4: {
         "title": "Code QR",
+        "invoke_suffix": " --state-dir $STATE_DIR",
         "is_qr": True,
         "qr_name": "CODE QR",
         "is_dispatch": True,

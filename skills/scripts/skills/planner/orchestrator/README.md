@@ -30,6 +30,23 @@ Step 3 (`format_step_3_implementation`) and step 6 (`format_step_6_documentation
 are structural analogs and follow the same fix-mode pattern. The generic QR handler
 (`handle_qr_step_generic`) applies the same requirement to all other QR steps.
 
+## Wave-Scoped Parallel Dispatch (Step 3)
+
+`format_step_3_implementation` emits a MANDATORY PARALLEL EXECUTION block (not advisory prose)
+requiring all milestones in the current wave to be dispatched in a single assistant message.
+Wave-local milestone count is unknown at Python generation time, so the block does not use
+`parallel_constraint(N)`. The MANDATORY block is vacuously satisfied for zero-milestone waves.
+
+## STEPS[4] invoke_suffix
+
+STEPS[4] (Code QR) carries `"invoke_suffix": " --state-dir $STATE_DIR"`. This threads
+`--state-dir` to `impl_code_qr.py` so its `step_2_handler` can load `qr-impl-code.json`
+at generation time and inject `parallel_constraint(N)` for exact fan-out count. Without
+`invoke_suffix`, `state_dir` defaults to empty string, JSON loading is skipped, and fan-out
+falls through to advisory prose, causing LLM serialization. The LLM substitutes `$STATE_DIR`
+from its context when building the sub-agent dispatch prompt -- this avoids adding `--state-dir`
+to `executor.py`'s CLI argparse.
+
 ## Standard Args
 
 `--qr-fail` and `--qr-iteration` are accepted by all `mode_main` scripts but are not used

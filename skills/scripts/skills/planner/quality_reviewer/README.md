@@ -287,9 +287,10 @@ sub-orchestrators: they do not implement decompose or verify logic themselves.
 
 ```
 Step 1  Decompose   invoke impl_{phase}_qr_decompose through all its steps
-Step 2  Fan-Out     group qr-{phase}.json items by group_id; dispatch one Task
-                    per group calling impl_{phase}_qr_verify with --qr-item flags;
-                    fall back to sequential if Task tool is unavailable
+Step 2  Fan-Out     load qr-{phase}.json at Python generation time; group items by
+                    group_id; inject parallel_constraint(N) with exact group count
+                    so the LLM dispatches exactly N Tasks simultaneously; fall back
+                    to advisory prose when state_dir is empty or JSON is unavailable
 Step 3  Aggregate   re-read qr-{phase}.json; count PASS/FAIL/UNVERIFIED;
                     items missing a verify result are UNVERIFIED (fail)
 Step 4  Report      output PASS or ISSUES XML grouped by milestone;
@@ -313,6 +314,14 @@ Step 4  Report      output PASS or ISSUES XML grouped by milestone;
   (appended to the mode_script invocation), not pre_dispatch. The propagation chain
   is: executor STEPS dict -> format_step_7_doc_qr -> impl_docs_qr.py --state-dir
   arg -> step_handler -> decompose sub-step.
+- parallel_constraint(N) must receive N > 0. step_2_handler guards against N=0
+  from empty group sets and falls back to advisory prose. The FALLBACK sequential
+  clause must appear AFTER the parallel_constraint block so mandatory parallel is
+  the primary instruction and sequential is the degraded path (RSK-002).
+- state_dir is injected into impl_code_qr.py via STEPS[4] invoke_suffix at
+  dispatch time. Without invoke_suffix, state_dir defaults to empty string,
+  step_2_handler cannot load qr-impl-code.json, and fan-out falls through to
+  advisory prose. invoke_suffix is a prerequisite for step_2_handler fan-out.
 
 ### STEP_1_ABSORB Scope Constraint
 
